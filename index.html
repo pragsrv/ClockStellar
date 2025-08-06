@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple ClockStellar</title>
+    <style>
+        body {
+            background: #F9FAFB;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .clock-container {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .digit-container {
+            display: grid;
+            grid-template-columns: repeat(4, 40px);
+            grid-template-rows: repeat(6, 40px);
+            gap: 5px;
+        }
+        
+        .circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #E5E7EB;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .circle::before, .circle::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            height: 20px;
+            width: 2px;
+            background: #1F2937;
+            transform-origin: bottom;
+        }
+        
+        .circle::before {
+            transform: rotate(var(--angle-1));
+        }
+        
+        .circle::after {
+            transform: rotate(var(--angle-2));
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            color: #1F2937;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple ClockStellar</h1>
+    <div class="clock-container" id="clock">
+        <!-- Digits will be added by JavaScript -->
+    </div>
+    
+    <script>
+        const digits = {
+            '0': [
+                [90, 180], [90, 270], [90, 270], [180, 270],
+                [0, 180], [90, 180], [180, 270], [0, 180],
+                [0, 180], [0, 180], [0, 180], [0, 180],
+                [0, 180], [0, 180], [0, 180], [0, 180],
+                [0, 180], [0, 90], [0, 270], [0, 180],
+                [0, 90], [90, 270], [90, 270], [0, 270]
+            ],
+            '1': [
+                [90, 180], [90, 270], [180, 270], [225, 225],
+                [0, 90], [180, 270], [180, 0], [225, 225],
+                [225, 225], [180, 0], [180, 0], [225, 225],
+                [225, 225], [180, 0], [180, 0], [225, 225],
+                [90, 180], [270, 0], [0, 90], [180, 270],
+                [90, 0], [90, 270], [270, 90], [0, 270]
+            ],
+            '2': [
+                [180, 90], [90, 270], [90, 270], [270, 180],
+                [0, 90], [90, 270], [270, 180], [180, 0],
+                [180, 90], [270, 90], [0, 270], [180, 0],
+                [0, 180], [180, 90], [270, 90], [270, 0],
+                [180, 0], [0, 90], [270, 90], [180, 270],
+                [0, 90], [270, 90], [270, 90], [270, 0]
+            ],
+            '3': [
+                [180, 90], [90, 270], [90, 270], [270, 180],
+                [0, 90], [90, 270], [270, 180], [180, 0],
+                [180, 90], [270, 90], [0, 270], [180, 0],
+                [90, 0], [270, 90], [180, 270], [180, 0],
+                [90, 180], [270, 90], [0, 270], [180, 0],
+                [0, 90], [270, 90], [270, 90], [270, 0]
+            ],
+            '4': [
+                [180, 90], [180, 270], [225, 225], [225, 225],
+                [0, 180], [180, 0], [225, 225], [225, 225],
+                [0, 180], [180, 0], [180, 90], [180, 270],
+                [0, 180], [0, 90], [0, 270], [180, 0],
+                [0, 90], [270, 90], [180, 270], [180, 0],
+                [225, 225], [225, 225], [0, 90], [270, 0]
+            ],
+            '5': [
+                [180, 90], [90, 270], [90, 270], [270, 180],
+                [180, 0], [180, 90], [90, 270], [270, 0],
+                [0, 180], [0, 90], [90, 270], [270, 180],
+                [0, 90], [90, 270], [270, 180], [180, 0],
+                [180, 90], [270, 90], [0, 270], [180, 0],
+                [0, 90], [270, 90], [270, 90], [270, 0]
+            ],
+            '6': [
+                [180, 90], [90, 270], [90, 270], [270, 180],
+                [0, 180], [90, 180], [270, 90], [0, 270],
+                [180, 0], [0, 90], [270, 90], [180, 270],
+                [180, 0], [90, 180], [270, 180], [0, 180],
+                [0, 180], [0, 90], [270, 0], [180, 0],
+                [0, 90], [270, 90], [270, 90], [270, 0]
+            ],
+            '7': [
+                [180, 90], [270, 90], [270, 90], [270, 180],
+                [90, 0], [270, 90], [270, 225], [225, 0],
+                [225, 225], [45, 180], [45, 180], [225, 225],
+                [225, 225], [0, 180], [0, 180], [225, 225],
+                [225, 225], [0, 180], [0, 180], [225, 225],
+                [225, 225], [0, 90], [0, 270], [225, 225]
+            ],
+            '8': [
+                [180, 90], [90, 270], [90, 270], [270, 180],
+                [180, 0], [90, 180], [270, 180], [180, 0],
+                [180, 0], [90, 0], [0, 270], [180, 0],
+                [0, 180], [180, 90], [180, 270], [0, 180],
+                [180, 0], [90, 0], [270, 0], [180, 0],
+                [0, 90], [90, 270], [270, 90], [270, 0]
+            ],
+            '9': [
+                [180, 90], [90, 270], [90, 270], [270, 180],
+                [0, 180], [90, 180], [270, 180], [180, 0],
+                [180, 0], [0, 90], [0, 270], [180, 0],
+                [0, 90], [90, 270], [180, 270], [0, 180],
+                [90, 180], [90, 270], [0, 270], [180, 0],
+                [0, 90], [270, 90], [270, 90], [270, 0]
+            ]
+        };
+
+        // Create clock digits
+        const clock = document.getElementById('clock');
+        for (let i = 0; i < 4; i++) {
+            const digitContainer = document.createElement('div');
+            digitContainer.className = 'digit-container';
+            digitContainer.id = `digit-${i}`;
+            
+            for (let j = 0; j < 24; j++) {
+                const circle = document.createElement('div');
+                circle.className = 'circle';
+                digitContainer.appendChild(circle);
+            }
+            
+            clock.appendChild(digitContainer);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2, '0') + 
+                         now.getMinutes().toString().padStart(2, '0');
+            
+            for (let i = 0; i < 4; i++) {
+                const digit = time[i];
+                const digitContainer = document.getElementById(`digit-${i}`);
+                const circles = digitContainer.querySelectorAll('.circle');
+                
+                circles.forEach((circle, index) => {
+                    circle.style.setProperty('--angle-1', `${digits[digit][index][0]}deg`);
+                    circle.style.setProperty('--angle-2', `${digits[digit][index][1]}deg`);
+                });
+            }
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>

@@ -3,38 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple ClockStellar</title>
+    <title>Stellar Clock</title>
     <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --circle-color: #e9ecef;
+            --hand-color: #212529;
+            --text-color: #343a40;
+            --highlight: #0d6efd;
+        }
+        
         body {
-            background: #F9FAFB;
-            font-family: sans-serif;
+            background: var(--bg-color);
+            font-family: 'Segoe UI', system-ui, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+        }
+        
+        h1 {
+            margin-bottom: 2rem;
+            font-weight: 600;
+            text-align: center;
         }
         
         .clock-container {
             display: flex;
-            gap: 20px;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
         
         .digit-container {
             display: grid;
-            grid-template-columns: repeat(4, 40px);
-            grid-template-rows: repeat(6, 40px);
-            gap: 5px;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 0.5rem;
         }
         
         .circle {
-            width: 40px;
-            height: 40px;
+            width: 2.5rem;
+            height: 2.5rem;
             border-radius: 50%;
-            background: #E5E7EB;
+            background: var(--circle-color);
             position: relative;
             overflow: hidden;
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .circle:hover {
+            transform: scale(1.1);
+            background: #dee2e6;
         }
         
         .circle::before, .circle::after {
@@ -43,10 +67,11 @@
             left: 0;
             right: 0;
             margin: 0 auto;
-            height: 20px;
+            height: 1.25rem;
             width: 2px;
-            background: #1F2937;
+            background: var(--hand-color);
             transform-origin: bottom;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .circle::before {
@@ -57,17 +82,65 @@
             transform: rotate(var(--angle-2));
         }
         
-        h1 {
-            margin-bottom: 30px;
-            color: #1F2937;
+        .colon {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1rem;
+            align-self: center;
+        }
+        
+        .colon-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background: var(--highlight);
+            animation: pulse 2s infinite;
+        }
+        
+        .time-label {
+            margin-top: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--highlight);
+            text-align: center;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        @media (max-width: 600px) {
+            .circle {
+                width: 1.8rem;
+                height: 1.8rem;
+            }
+            .colon-dot {
+                width: 0.5rem;
+                height: 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Simple ClockStellar</h1>
-    <div class="clock-container" id="clock">
-        <!-- Digits will be added by JavaScript -->
+    <h1>Stellar Clock</h1>
+    <div class="clock-container">
+        <!-- Hours -->
+        <div class="digit-container" id="hour-tens"></div>
+        <div class="digit-container" id="hour-ones"></div>
+        
+        <!-- Colon -->
+        <div class="colon">
+            <div class="colon-dot"></div>
+            <div class="colon-dot"></div>
+        </div>
+        
+        <!-- Minutes -->
+        <div class="digit-container" id="min-tens"></div>
+        <div class="digit-container" id="min-ones"></div>
     </div>
+    <div class="time-label" id="time-label"></div>
     
     <script>
         const digits = {
@@ -153,40 +226,52 @@
             ]
         };
 
-        // Create clock digits
-        const clock = document.getElementById('clock');
-        for (let i = 0; i < 4; i++) {
-            const digitContainer = document.createElement('div');
-            digitContainer.className = 'digit-container';
-            digitContainer.id = `digit-${i}`;
-            
-            for (let j = 0; j < 24; j++) {
+        // Initialize clock digits
+        const digitContainers = {
+            'hour-tens': document.getElementById('hour-tens'),
+            'hour-ones': document.getElementById('hour-ones'),
+            'min-tens': document.getElementById('min-tens'),
+            'min-ones': document.getElementById('min-ones')
+        };
+
+        // Create circles for each digit
+        Object.values(digitContainers).forEach(container => {
+            for (let i = 0; i < 24; i++) {
                 const circle = document.createElement('div');
                 circle.className = 'circle';
-                digitContainer.appendChild(circle);
+                container.appendChild(circle);
             }
-            
-            clock.appendChild(digitContainer);
-        }
+        });
 
         function updateClock() {
             const now = new Date();
-            const time = now.getHours().toString().padStart(2, '0') + 
-                         now.getMinutes().toString().padStart(2, '0');
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const timeString = `${hours}:${minutes}`;
             
-            for (let i = 0; i < 4; i++) {
-                const digit = time[i];
-                const digitContainer = document.getElementById(`digit-${i}`);
-                const circles = digitContainer.querySelectorAll('.circle');
-                
-                circles.forEach((circle, index) => {
-                    circle.style.setProperty('--angle-1', `${digits[digit][index][0]}deg`);
-                    circle.style.setProperty('--angle-2', `${digits[digit][index][1]}deg`);
-                });
-            }
+            // Update time label
+            document.getElementById('time-label').textContent = 
+                now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Update digit displays
+            updateDigit('hour-tens', hours[0]);
+            updateDigit('hour-ones', hours[1]);
+            updateDigit('min-tens', minutes[0]);
+            updateDigit('min-ones', minutes[1]);
         }
 
+        function updateDigit(containerId, digit) {
+            const circles = digitContainers[containerId].querySelectorAll('.circle');
+            circles.forEach((circle, index) => {
+                circle.style.setProperty('--angle-1', `${digits[digit][index][0]}deg`);
+                circle.style.setProperty('--angle-2', `${digits[digit][index][1]}deg`);
+            });
+        }
+
+        // Initial update
         updateClock();
+        
+        // Update every second
         setInterval(updateClock, 1000);
     </script>
 </body>

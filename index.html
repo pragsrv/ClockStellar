@@ -3,276 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellar Clock</title>
+    <title>ClockStellar</title>
+    
     <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
         :root {
-            --bg-color: #f8f9fa;
-            --circle-color: #e9ecef;
-            --hand-color: #212529;
-            --text-color: #343a40;
-            --highlight: #0d6efd;
+          --circle-x: 4;
+          --circle-y: 6;
+          --circle-size: calc((100vw / calc(var(--circle-x) * 2)) - .5rem);
         }
-        
+        @media (min-width: 480px) {
+          :root {
+            --circle-size: 50px;
+          }
+        }
+
         body {
-            background: var(--bg-color);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 2rem;
-            color: var(--text-color);
+          background: #F9FAFB;
+          font-family: Inter, sans-serif;
         }
-        
-        h1 {
-            margin-bottom: 2rem;
-            font-weight: 600;
-            text-align: center;
+
+        .container {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 100%;
         }
-        
-        .clock-container {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        .container header {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          margin: 2rem 1rem 0;
         }
-        
-        .digit-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(6, 1fr);
-            gap: 0.5rem;
+        .container h1 {
+          font-size: clamp(1.5rem, 4vw, 4rem);
+          font-weight: 700;
+          color: #1F2937;
         }
-        
-        .circle {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 50%;
-            background: var(--circle-color);
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease;
+
+        .watch-container {
+          display: grid;
+          grid-template-columns: repeat(2, calc(var(--circle-x) * var(--circle-size)));
+          grid-template-rows: repeat(2, calc(var(--circle-y) * var(--circle-size)));
+          margin-top: 2rem;
         }
-        
-        .circle:hover {
-            transform: scale(1.1);
-            background: #dee2e6;
+
+        .watch-circle-container {
+          display: grid;
+          grid-template-columns: repeat(var(--circle-x), var(--circle-size));
+          grid-template-rows: repeat(var(--circle-y), var(--circle-size));
         }
-        
-        .circle::before, .circle::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            margin: 0 auto;
-            height: 1.25rem;
-            width: 2px;
-            background: var(--hand-color);
-            transform-origin: bottom;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+        span {
+          font-size: var(--circle-size);
+          width: 1em;
+          height: 1em;
+          border-radius: 50%;
+          display: block;
+          position: relative;
+          box-shadow: inset 1px -1px 2px 1px rgba(0, 0, 0, 0.17);
+          overflow: hidden;
         }
-        
-        .circle::before {
-            transform: rotate(var(--angle-1));
+        span:before, span::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          margin: 0 auto;
+          height: calc(var(--circle-size) / 2);
+          width: 3px;
+          background: #1F2937;
+          transition: 5s;
+          transform-origin: bottom;
         }
-        
-        .circle::after {
-            transform: rotate(var(--angle-2));
+        span::before {
+          transform: rotate(var(--angle-1));
         }
-        
-        .colon {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 1rem;
-            align-self: center;
+        span::after {
+          transform: rotate(var(--angle-2));
         }
-        
-        .colon-dot {
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background: var(--highlight);
-            animation: pulse 2s infinite;
+
+        .inspiration-text {
+          margin-top: 3rem;
+          margin-left: 1rem;
         }
-        
-        .time-label {
-            margin-top: 1.5rem;
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: var(--highlight);
-            text-align: center;
+
+        .social {
+          display: flex;
+          align-items: center;
+          height: 2.5rem;
+          padding: 0 1rem;
+          background: #1DA1F2;
+          border-radius: 2rem;
+          color: white;
+          text-decoration: none;
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        .social:hover {
+          background: #0d76b7;
         }
-        
-        @media (max-width: 600px) {
-            .circle {
-                width: 1.8rem;
-                height: 1.8rem;
-            }
-            .colon-dot {
-                width: 0.5rem;
-                height: 0.5rem;
-            }
+        .social:visited {
+          color: white;
+        }
+        .social + .social {
+          margin-left: 1rem;
+        }
+        @media (min-width: 480px) {
+          .social + .social {
+            margin-left: 2rem;
+          }
+        }
+        .social-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 2rem 0;
+          flex-shrink: 0;
         }
     </style>
 </head>
 <body>
-    <h1>Stellar Clock</h1>
-    <div class="clock-container">
-        <!-- Hours -->
-        <div class="digit-container" id="hour-tens"></div>
-        <div class="digit-container" id="hour-ones"></div>
-        
-        <!-- Colon -->
-        <div class="colon">
-            <div class="colon-dot"></div>
-            <div class="colon-dot"></div>
-        </div>
-        
-        <!-- Minutes -->
-        <div class="digit-container" id="min-tens"></div>
-        <div class="digit-container" id="min-ones"></div>
-    </div>
-    <div class="time-label" id="time-label"></div>
+        <div class="container">
+          <div class="watch-container">
+            <div class="watch-circle-container" id="watch-circle-0"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="watch-circle-container" id="watch-circle-1"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="watch-circle-container" id="watch-circle-2"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="watch-circle-container" id="watch-circle-3"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+    <div id="app"></div>
     
     <script>
-        const digits = {
-            '0': [
-                [90, 180], [90, 270], [90, 270], [180, 270],
-                [0, 180], [90, 180], [180, 270], [0, 180],
-                [0, 180], [0, 180], [0, 180], [0, 180],
-                [0, 180], [0, 180], [0, 180], [0, 180],
-                [0, 180], [0, 90], [0, 270], [0, 180],
-                [0, 90], [90, 270], [90, 270], [0, 270]
-            ],
-            '1': [
-                [90, 180], [90, 270], [180, 270], [225, 225],
-                [0, 90], [180, 270], [180, 0], [225, 225],
-                [225, 225], [180, 0], [180, 0], [225, 225],
-                [225, 225], [180, 0], [180, 0], [225, 225],
-                [90, 180], [270, 0], [0, 90], [180, 270],
-                [90, 0], [90, 270], [270, 90], [0, 270]
-            ],
-            '2': [
-                [180, 90], [90, 270], [90, 270], [270, 180],
-                [0, 90], [90, 270], [270, 180], [180, 0],
-                [180, 90], [270, 90], [0, 270], [180, 0],
-                [0, 180], [180, 90], [270, 90], [270, 0],
-                [180, 0], [0, 90], [270, 90], [180, 270],
-                [0, 90], [270, 90], [270, 90], [270, 0]
-            ],
-            '3': [
-                [180, 90], [90, 270], [90, 270], [270, 180],
-                [0, 90], [90, 270], [270, 180], [180, 0],
-                [180, 90], [270, 90], [0, 270], [180, 0],
-                [90, 0], [270, 90], [180, 270], [180, 0],
-                [90, 180], [270, 90], [0, 270], [180, 0],
-                [0, 90], [270, 90], [270, 90], [270, 0]
-            ],
-            '4': [
-                [180, 90], [180, 270], [225, 225], [225, 225],
-                [0, 180], [180, 0], [225, 225], [225, 225],
-                [0, 180], [180, 0], [180, 90], [180, 270],
-                [0, 180], [0, 90], [0, 270], [180, 0],
-                [0, 90], [270, 90], [180, 270], [180, 0],
-                [225, 225], [225, 225], [0, 90], [270, 0]
-            ],
-            '5': [
-                [180, 90], [90, 270], [90, 270], [270, 180],
-                [180, 0], [180, 90], [90, 270], [270, 0],
-                [0, 180], [0, 90], [90, 270], [270, 180],
-                [0, 90], [90, 270], [270, 180], [180, 0],
-                [180, 90], [270, 90], [0, 270], [180, 0],
-                [0, 90], [270, 90], [270, 90], [270, 0]
-            ],
-            '6': [
-                [180, 90], [90, 270], [90, 270], [270, 180],
-                [0, 180], [90, 180], [270, 90], [0, 270],
-                [180, 0], [0, 90], [270, 90], [180, 270],
-                [180, 0], [90, 180], [270, 180], [0, 180],
-                [0, 180], [0, 90], [270, 0], [180, 0],
-                [0, 90], [270, 90], [270, 90], [270, 0]
-            ],
-            '7': [
-                [180, 90], [270, 90], [270, 90], [270, 180],
-                [90, 0], [270, 90], [270, 225], [225, 0],
-                [225, 225], [45, 180], [45, 180], [225, 225],
-                [225, 225], [0, 180], [0, 180], [225, 225],
-                [225, 225], [0, 180], [0, 180], [225, 225],
-                [225, 225], [0, 90], [0, 270], [225, 225]
-            ],
-            '8': [
-                [180, 90], [90, 270], [90, 270], [270, 180],
-                [180, 0], [90, 180], [270, 180], [180, 0],
-                [180, 0], [90, 0], [0, 270], [180, 0],
-                [0, 180], [180, 90], [180, 270], [0, 180],
-                [180, 0], [90, 0], [270, 0], [180, 0],
-                [0, 90], [90, 270], [270, 90], [270, 0]
-            ],
-            '9': [
-                [180, 90], [90, 270], [90, 270], [270, 180],
-                [0, 180], [90, 180], [270, 180], [180, 0],
-                [180, 0], [0, 90], [0, 270], [180, 0],
-                [0, 90], [90, 270], [180, 270], [0, 180],
-                [90, 180], [90, 270], [0, 270], [180, 0],
-                [0, 90], [270, 90], [270, 90], [270, 0]
-            ]
-        };
-
-        // Initialize clock digits
-        const digitContainers = {
-            'hour-tens': document.getElementById('hour-tens'),
-            'hour-ones': document.getElementById('hour-ones'),
-            'min-tens': document.getElementById('min-tens'),
-            'min-ones': document.getElementById('min-ones')
-        };
-
-        // Create circles for each digit
-        Object.values(digitContainers).forEach(container => {
-            for (let i = 0; i < 24; i++) {
-                const circle = document.createElement('div');
-                circle.className = 'circle';
-                container.appendChild(circle);
-            }
-        });
-
-        function updateClock() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const timeString = `${hours}:${minutes}`;
+            const digits = {
+            	0: [
+            		[90, 180],
+            		[90, 270],
+            		[90, 270],
+            		[180, 270],
             
-            // Update time label
-            document.getElementById('time-label').textContent = 
-                now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            		[0, 180],
+            		[90, 180],
+            		[180, 270],
+            		[0, 180],
             
-            // Update digit displays
-            updateDigit('hour-tens', hours[0]);
-            updateDigit('hour-ones', hours[1]);
-            updateDigit('min-tens', minutes[0]);
-            updateDigit('min-ones', minutes[1]);
-        }
+            		[0, 180],
+            		[0, 180],
+            		[0, 180],
+            		[0, 180],
+            
+            		[0, 180],
+            		[0, 180],
+            		[0, 180],
+            		[0, 180],
+            
+            		[0, 180],
+            		[0, 90],
+            		[0, 270],
+            		[0, 180],
+            
+            		[0, 90],
+            		[90, 270],
+            		[90, 270],
+            		[0, 270]
+            	],
+            	1: [
+            		[90, 180],
+            		[90, 270],
+            		[180, 270],
+            		[225, 225],
+            		[0, 90],
+            		[180, 270],
+            		[180, 0],
+            		[225, 225],
+            		[225, 225],
+            		[180, 0],
+            		[180, 0],
+            		[225, 225],
+            		[225, 225],
+            		[180, 0],
+            		[180, 0],
+            		[225, 225],
+            		[90, 180],
+            		[270, 0],
+            		[0, 90],
+            		[180, 270],
+            		[90, 0],
+            		[90, 270],
+            		[270, 90],
+            		[0, 270]
+            	],
+            	2: [
+            		[180, 90],
+            		[90, 270],
+            		[90, 270],
+            		[270, 180],
+            		[0, 90],
+            		[90, 270],
+            		[270, 180],
+            		[180, 0],
+            		[180, 90],
+            		[270, 90],
+            		[0, 270],
+            		[180, 0],
+            		[0, 180],
+            		[180, 90],
+            		[270, 90],
+            		[270, 0],
+            		[180, 0],
+            		[0, 90],
+            		[270, 90],
+            		[180, 270],
+            		[0, 90],
+            		[270, 90],
+            		[270, 90],
+            		[270, 0]
+            	],
+            	3: [
+            		[180, 90],
+            		[90, 270],
+            		[90, 270],
+            		[270, 180],
+            		[0, 90],
+            		[90, 270],
+            		[270, 180],
+            		[180, 0],
+            		[180, 90],
+            		[270, 90],
+            		[0, 270],
+            		[180, 0],
+            		[90, 0],
+            		[270, 90],
+            		[180, 270],
+            		[180, 0],
+            		[90, 180],
+            		[270, 90],
+            		[0, 270],
+            		[180, 0],
+            		[0, 90],
+            		[270, 90],
+            		[270, 90],
+            		[270, 0]
+            	],
+            	4: [
+            		[180, 90],
+            		[180, 270],
+            		[225, 225],
+            		[225, 225],
+            		[0, 180],
+            		[180, 0],
+            		[225, 225],
+            		[225, 225],
+            		[0, 180],
+            		[180, 0],
+            		[180, 90],
+            		[180, 270],
+            		[0, 180],
+            		[0, 90],
+            		[0, 270],
+            		[180, 0],
+            		[0, 90],
+            		[270, 90],
+            		[180, 270],
+            		[180, 0],
+            		[225, 225],
+            		[225, 225],
+            		[0, 90],
+            		[270, 0]
+            	],
+            	5: [
+            		[180, 90],
+            		[90, 270],
+            		[90, 270],
+            		[270, 180],
+            		[180, 0],
+            		[180, 90],
+            		[90, 270],
+            		[270, 0],
+            		[0, 180],
+            		[0, 90],
+            		[90, 270],
+            		[270, 180],
+            		[0, 90],
+            		[90, 270],
+            		[270, 180],
+            		[180, 0],
+            		[180, 90],
+            		[270, 90],
+            		[0, 270],
+            		[180, 0],
+            		[0, 90],
+            		[270, 90],
+            		[270, 90],
+            		[270, 0]
+            	],
+            	6: [
+            		[180, 90],
+            		[90, 270],
+            		[90, 270],
+            		[270, 180],
+            		[0, 180],
+            		[90, 180],
+            		[270, 90],
+            		[0, 270],
+            		[180, 0],
+            		[0, 90],
+            		[270, 90],
+            		[180, 270],
+            		[180, 0],
+            		[90, 180],
+            		[270, 180],
+            		[0, 180],
+            		[0, 180],
+            		[0, 90],
+            		[270, 0],
+            		[180, 0],
+            		[0, 90],
+            		[270, 90],
+            		[270, 90],
+            		[270, 0]
+            	],
+            	7: [
+            		[180, 90],
+            		[270, 90],
+            		[270, 90],
+            		[270, 180],
+            		[90, 0],
+            		[270, 90],
+            		[270, 225],
+            		[225, 0],
+            		[225, 225],
+            		[45, 180],
+            		[45, 180],
+            		[225, 225],
+            		[225, 225],
+            		[0, 180],
+            		[0, 180],
+            		[225, 225],
+            		[225, 225],
+            		[0, 180],
+            		[0, 180],
+            		[225, 225],
+            		[225, 225],
+            		[0, 90],
+            		[0, 270],
+            		[225, 225]
+            	],
+            	8: [
+            		[180, 90],
+            		[90, 270],
+            		[90, 270],
+            		[270, 180],
+            		[180, 0],
+            		[90, 180],
+            		[270, 180],
+            		[180, 0],
+            		[180, 0],
+            		[90, 0],
+            		[0, 270],
+            		[180, 0],
+            		[0, 180],
+            		[180, 90],
+            		[180, 270],
+            		[0, 180],
+            		[180, 0],
+            		[90, 0],
+            		[270, 0],
+            		[180, 0],
+            		[0, 90],
+            		[90, 270],
+            		[270, 90],
+            		[270, 0]
+            	],
+            	9: [
+            		[180, 90],
+            		[90, 270],
+            		[90, 270],
+            		[270, 180],
+            		[0, 180],
+            		[90, 180],
+            		[270, 180],
+            		[180, 0],
+            		[180, 0],
+            		[0, 90],
+            		[0, 270],
+            		[180, 0],
+            		[0, 90],
+            		[90, 270],
+            		[180, 270],
+            		[0, 180],
+            		[90, 180],
+            		[90, 270],
+            		[0, 270],
+            		[180, 0],
+            		[0, 90],
+            		[270, 90],
+            		[270, 90],
+            		[270, 0]
+            	]
+            };
 
-        function updateDigit(containerId, digit) {
-            const circles = digitContainers[containerId].querySelectorAll('.circle');
-            circles.forEach((circle, index) => {
-                circle.style.setProperty('--angle-1', `${digits[digit][index][0]}deg`);
-                circle.style.setProperty('--angle-2', `${digits[digit][index][1]}deg`);
-            });
-        }
-
-        // Initial update
-        updateClock();
-        
-        // Update every second
-        setInterval(updateClock, 1000);
+            const set = (el, value) => {
+            	const spans = el.querySelectorAll("span");
+            	spans.forEach((span, index) => {
+            		span.style.setProperty("--angle-1", `${value[index][0]}deg`);
+            		span.style.setProperty("--angle-2", `${value[index][1]}deg`);
+            	});
+            };
+            setInterval(() => {
+            	const date = new Date();
+            	const [h1, h2] = date.getHours().toString().padStart(2, "0");
+            	const [m1, m2] = date.getMinutes().toString().padStart(2, "0");
+            	const time = [h1, h2, m1, m2];
+            	for (let i = 0; i < time.length; i++) {
+            		set(document.querySelector(`#watch-circle-${i}`), digits[time[i]]);
+            	}
+            }, 100);
     </script>
 </body>
 </html>
